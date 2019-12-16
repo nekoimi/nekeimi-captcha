@@ -1,0 +1,28 @@
+{
+    "name": "nekoimi/captcha",
+    "description": "https://nekoimi.com",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "nekoimi",
+            "email": "i@sakuraio.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.0.0",
+        "intervention/image": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nekoimi\\Canvas\\": "src/"
+        }
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        }
+    }
+}
