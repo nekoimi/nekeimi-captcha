@@ -1,9 +1,9 @@
-# nekeimi-captcha
+# nekeimi-canvas
 
 ### Installation
 
 ```base
-composer install nekoimi/captcha -vvv
+composer install nekoimi/canvas -vvv
 ```
 
 - php7
