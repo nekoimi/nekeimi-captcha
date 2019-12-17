@@ -9,7 +9,7 @@
 
 namespace Nekoimi\Canvas;
 
-use Illuminate\Config\Repository;
+use Illuminate\Config\Repository as Config;
 use Intervention\Image\AbstractFont;
 use Intervention\Image\Image;
 use Symfony\Component\Finder\SplFileInfo;
@@ -17,7 +17,7 @@ use Symfony\Component\Finder\SplFileInfo;
 class Avatar extends Canvas
 {
     /**
-     * @var Repository
+     * @var Config
      */
     protected $config;
 
@@ -45,8 +45,8 @@ class Avatar extends Canvas
      */
     protected function mergeConfig(array $options)
     {
-        $this->config = new Repository(array_merge(
-            $this->config->all(),
+        $this->config = new Config(array_merge(
+            $this->config->get($this->configKey(), []),
             $options
         ));
     }
@@ -110,7 +110,7 @@ class Avatar extends Canvas
      */
     protected function fontColor()
     {
-        return (string)$this->config->get('fontColor');
+        return $this->config->get('fontColor');
     }
 
     /**

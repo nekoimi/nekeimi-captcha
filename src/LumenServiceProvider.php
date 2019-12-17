@@ -18,36 +18,47 @@ class LumenServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->configure('nekocanvas');
+        $configPath = __DIR__ . '/../config/config.php';
+        $this->mergeConfigFrom($configPath, 'nekocanvas');
 
-        $this->app->singleton('nekoimi.canvas.avatar', function ($app) {
-            return new Avatar(
-                $this->configure('avatar'),
-                $app['Illuminate\Filesystem\Filesystem'],
-                $app['Intervention\Image\ImageManager']
-            );
-        });
+        $config = $this->app['config']->get('nekocanvas', []);
 
-        $this->app->singleton('nekoimi.canvas.captcha', function ($app) {
-            return new Captcha(
-                $this->configure('captcha'),
-                $app->make('cache'),
-                $app['Illuminate\Filesystem\Filesystem'],
-                $app['Intervention\Image\ImageManager']
-            );
-        });
+        $this->app->singleton(
+            'nekoimi.canvas.captcha',
+            function($app) use ($config){
+                return new Captcha(
+                    $config,
+                    $app->make('cache'),
+                    $app['Illuminate\Filesystem\Filesystem'],
+                    $app['Intervention\Image\ImageManager']
+                );
+            }
+        );
+
+        $this->app->singleton(
+            'nekoimi.canvas.avatar',
+            function($app) use ($config){
+                return new Avatar(
+                    $config,
+                    $app['Illuminate\Filesystem\Filesystem'],
+                    $app['Intervention\Image\ImageManager']
+                );
+            }
+        );
     }
 
     /**
-     * @param string|null $name
-     * @return mixed
+     * Bootstrap the application.
      */
-    protected function configure(string $name = null)
+    public function boot()
     {
-        if (is_null($name)) {
-            return config('nekocanvas', []);
+        $configPath = require_once __DIR__ . '/../config/config.php';
+        if (function_exists('config_path')){
+            $publishPath = config_path('nekocanvas.php');
+        } else{
+            $publishPath = base_path('config/nekocanvas.php');
         }
-
-        return config('nekocanvas.' . $name, []);
+        $this->publishes([$configPath => $publishPath], 'config');
     }
+
 }

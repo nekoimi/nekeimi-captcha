@@ -10,6 +10,7 @@
 namespace Nekoimi\Canvas;
 
 use Illuminate\Cache\CacheManager;
+use Illuminate\Config\Repository as Config;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Filesystem\Filesystem;
 use Intervention\Image\AbstractFont;
@@ -21,6 +22,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class Captcha extends Canvas
 {
+
+    /**
+     * @var Config
+     */
+    protected $options;
+
     /**
      * @var Store
      */
@@ -52,6 +59,9 @@ class Captcha extends Canvas
         parent::__construct($config, $files, $imageManager);
         $this->cache = $cache->getStore();
 
+        $this->config = new Config(
+            $this->config->get($this->configKey(), [])
+        );
         $this->loadBackgroundImages();
     }
 
@@ -66,6 +76,10 @@ class Captcha extends Canvas
             $this->config->get('options', []),
             $options
         ));
+
+        $this->options = new Config(
+            $this->config->get('options', [])
+        );
     }
 
     /**
@@ -85,7 +99,7 @@ class Captcha extends Canvas
     {
         $characters = str_split($this->config->get('characters'));
         $captchaValue = '';
-        for ($i = 0; $i < (int)$this->config->get('options.length'); $i ++) {
+        for ($i = 0; $i < (int)$this->options->get('length'); $i ++) {
             $captchaValue .= $characters[rand(0, count($characters) - 1)];
         }
 
@@ -112,7 +126,7 @@ class Captcha extends Canvas
      */
     protected function renderText(Image $canvas)
     {
-        $confLength = $this->config->get('options.length', 4);
+        $confLength = $this->options->get('length', 4);
         $marginTop = $canvas->getHeight() / $confLength;
 
         $i = 0;
@@ -139,7 +153,7 @@ class Captcha extends Canvas
      */
     protected function fontSize()
     {
-        return (int)$this->config->get('options.fontSize');
+        return (int)$this->options->get('fontSize');
     }
 
     /**
@@ -147,7 +161,7 @@ class Captcha extends Canvas
      */
     protected function fontColor()
     {
-        $confFontColor = $this->config->get('options.fontColors');
+        $confFontColor = $this->options->get('fontColors');
         if (is_string($confFontColor)) {
             return $confFontColor;
         }
@@ -166,7 +180,7 @@ class Captcha extends Canvas
      */
     protected function angle()
     {
-        $confFontAngle = (int)$this->config->get('options.angle');
+        $confFontAngle = (int)$this->options->get('angle');
         return rand((- 1 * $confFontAngle), $confFontAngle);
     }
 
@@ -178,7 +192,7 @@ class Captcha extends Canvas
      */
     protected function lines(Image $canvas)
     {
-        $confLines = (int)$this->config->get('options.lines');
+        $confLines = (int)$this->options->get('lines');
         for ($i = 0; $i < $confLines; $i++) {
             $canvas->line(
                 rand(0, $canvas->width()) + $i * rand(0, $canvas->height()),
@@ -203,17 +217,17 @@ class Captcha extends Canvas
     {
         $this->mergeConfig($options);
 
-        $width = $this->config->get('options.width', 100);
-        $height = $this->config->get('options.height', 30);
+        $width = $this->options->get('width', 100);
+        $height = $this->options->get('height', 30);
 
         $this->generate();
         $canvas = $this->imageManager->canvas(
             $width,
             $height,
-            $this->config->get('options.bgColor')
+            $this->options->get('bgColor')
         );
 
-        if ($this->config->get('options.bgImage')) {
+        if ($this->options->get('bgImage')) {
             $bgImage = $this->imageManager->make(
                 $this->backgroundImages[mt_rand(0, sizeof($this->backgroundImages) - 1)]
             )->resize($width, $height);
@@ -221,7 +235,7 @@ class Captcha extends Canvas
             $canvas->insert($bgImage);
         }
 
-        if (($contrast = (int)$this->config->get('options.contrast')) !== 0) {
+        if (($contrast = (int)$this->options->get('contrast')) !== 0) {
             $canvas->contrast($contrast);
         }
 
@@ -229,15 +243,15 @@ class Captcha extends Canvas
 
         $canvas = $this->lines($canvas);
 
-        if (($sharpen = (int)$this->config->get('options.sharpen')) > 0) {
+        if (($sharpen = (int)$this->options->get('sharpen')) > 0) {
             $canvas->sharpen($sharpen);
         }
 
-        if (($blur = (int)$this->config->get('options.blur')) > 0) {
+        if (($blur = (int)$this->options->get('blur')) > 0) {
             $canvas->blur($blur);
         }
 
-        return $canvas->response('png', (int)$this->config->get('options.quality'));
+        return $canvas->response('png', (int)$this->options->get('quality'));
     }
 
     /**

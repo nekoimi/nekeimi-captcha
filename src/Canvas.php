@@ -9,7 +9,7 @@
 
 namespace Nekoimi\Canvas;
 
-use Illuminate\Config\Repository;
+use Illuminate\Config\Repository as Config;
 use Illuminate\Filesystem\Filesystem;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
@@ -25,7 +25,7 @@ abstract class Canvas
     protected $files;
 
     /**
-     * @var Repository
+     * @var Config
      */
     protected $config;
 
@@ -59,10 +59,7 @@ abstract class Canvas
         $this->imageManager = $imageManager;
 
         // merge default config
-        $this->config = new Repository(array_merge(
-            $this->defaultConfigure()->get($this->configKey()),
-            $config
-        ));
+        $this->config = new Config($config);
 
         $this->loadFonts();
     }
@@ -102,26 +99,16 @@ abstract class Canvas
     }
 
     /**
-     * @return Repository
-     */
-    protected function defaultConfigure()
-    {
-        return new Repository(
-            require_once __DIR__ . '/../config/config.php'
-        );
-    }
-
-    /**
      * @param string $bit
      * @return string
      */
     protected function cacheKey(string $bit)
     {
         return str_replace(
-            '/',
-            '.',
-            str_replace('\\', '/', strtolower(__CLASS__))
-        ) . ':' . $bit;
+                '/',
+                '.',
+                str_replace('\\', '/', strtolower(__CLASS__))
+            ) . ':' . $bit;
     }
 
     /**
